@@ -2,6 +2,7 @@
 #define SYSTEM_H
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "process.h"
@@ -9,19 +10,24 @@
 
 class System {
  public:
-  Processor& Cpu();                   // TODO: See src/system.cpp
-  std::vector<Process>& Processes();  // TODO: See src/system.cpp
-  float MemoryUtilization();          // TODO: See src/system.cpp
-  long UpTime();                      // TODO: See src/system.cpp
-  int TotalProcesses();               // TODO: See src/system.cpp
-  int RunningProcesses();             // TODO: See src/system.cpp
-  std::string Kernel();               // TODO: See src/system.cpp
-  std::string OperatingSystem();      // TODO: See src/system.cpp
+  Processor& Cpu();                   /// The CPU.
+  std::vector<Process>& Processes();  /// List of processes.
+  float
+  MemoryUtilization();  /// Total memory utiliation in fraction of total memory.
+  long UpTime();        /// System uptime in seconds.
+  int TotalProcesses();           /// Count of total processes.
+  int RunningProcesses();         /// How much processes are running.
+  std::string Kernel();           /// Name of the kernel.
+  std::string OperatingSystem();  /// Name of the operating system.
 
-  // TODO: Define any necessary private members
+  System();  /// Initializes the processes.
+
+  void Update();  /// Uptates the values.
+
  private:
   Processor cpu_ = {};
-  std::vector<Process> processes_ = {};
+  std::vector<Process> processes_ = {};  /// List which holds all processes.
+  std::unordered_map<int, Process*> procMap_ = {};  /// PID to Process mapping.
 };
 
 #endif

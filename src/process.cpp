@@ -1,33 +1,88 @@
+#include "process.h"
+
 #include <unistd.h>
+
 #include <cctype>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
-#include "process.h"
+#include "linux_parser.h"
 
 using std::string;
 using std::to_string;
 using std::vector;
 
-// TODO: Return this process's ID
-int Process::Pid() { return 0; }
+///
+/// constructor
+///
+Process::Process(int pid) : pid_(pid), isAlive_(true) {
+  try {
+    Update();
+  } catch (std::runtime_error& e) {
+    throw std::runtime_error("In Process::Process():" + std::string(e.what()));
+  }
+}
+///
+/// Return this process's ID.
+///
+int Process::Pid() const { return pid_; }
 
-// TODO: Return this process's CPU utilization
-float Process::CpuUtilization() { return 0; }
+///
+/// TODO: Return this process's CPU utilization
+///
+float Process::CpuUtilization() const {
+  static const int hertz = sysconf(_SC_CLK_TCK);
 
-// TODO: Return the command that generated this process
-string Process::Command() { return string(); }
+  return (float(activeJiffiesNew_ - activeJiffiesOld_) / hertz) / upTime_;
+}
 
-// TODO: Return this process's memory utilization
-string Process::Ram() { return string(); }
+///
+/// Returns the command that generated this process.
+///
+string Process::Command() const { return LinuxParser::Command(pid_); }
 
-// TODO: Return the user (name) that generated this process
-string Process::User() { return string(); }
+///
+/// TODO: Returns this process's memory utilization.
+///
+string Process::Ram() const { return LinuxParser::Ram(pid_); }
 
-// TODO: Return the age of this process (in seconds)
-long int Process::UpTime() { return 0; }
+/// TODO: Return the user (name) that generated this process
+string Process::User() const { return LinuxParser::User(pid_); }
 
-// TODO: Overload the "less than" comparison operator for Process objects
-// REMOVE: [[maybe_unused]] once you define the function
-bool Process::operator<(Process const& a[[maybe_unused]]) const { return true; }
+///
+/// Returns the age of this process (in seconds).
+///
+long int Process::UpTime() const { return upTime_; }
+
+///
+/// Compares two processes' CPU utilization values.
+///
+bool Process::operator<(Process const& other) const {
+  return this->CpuUtilization() < other.CpuUtilization();
+}
+
+///
+/// Detects whether a process is still valid.
+///
+bool Process::is_alive() const { return isAlive_; }
+
+///
+/// Switches the valid state of a process on or off.
+///
+void Process::set_alive(bool flag) { isAlive_ = flag; }
+
+///
+/// Uptates the process' object data.
+///
+void Process::Update() {
+  activeJiffiesOld_ = activeJiffiesNew_;
+  try {
+    upTime_ = LinuxParser::UpTime(pid_);  // measured in seconds
+    activeJiffiesNew_ = LinuxParser::ActiveJiffies(pid_);
+
+  } catch (std::exception& e) {
+    throw std::runtime_error("Process::Update():" + std::string(e.what()));
+  }
+}

@@ -4,7 +4,10 @@
 #include <string>
 
 namespace Format {
-std::string ElapsedTime(long times);  // TODO: See src/format.cpp
-};                                    // namespace Format
+
+///
+/// Formats the time from seconds to HH:MM::SS
+std::string ElapsedTime(long times);
+};  // namespace Format
 
 #endif
