@@ -1,0 +1,21 @@
+At this file I will say something about my version of the C++ Nanodegree version of the tiny htop exercise.
+But what should I write here?
+
+At first to say, I want at my process table show a nearly realistic state of the consumption fraction of CPU utilization.
+For this proposal I have decided that all valid Process objects should be stay resident between the update cycles (which one is each second).
+Therefore I have the problem that I need to check the Process objects if they still valid after an update cycle.
+This I want to do by comparing the PID list kept from LinuxParser::Pids() and comparing the entries with the PIDs stored in the Process objects.
+So far as I can consider this, that's basically a problem concerning set theory. I'm working at time on this.
+
+And now I'm stickig for some time at a hard to detectable runtime error, resulting by segmentation fault.
+At least for me the problem is pretty hard to detect, and I'm on a point, where my rare wisdom is on an end.
+
+The program crashes always at line 107 in system.cpp.
+I feelt that I have to dig me the C++ standard libraries, but I'm at my coding level by far not good enough for chasing my error.
+I tried to use GDB for chasing, but I failed. And, you may it believe or not, I'm coding here with a Raspberry Pi2 machine, 4GB RAM.
+
+
+Finally, as a conclusion of this README, I would be greatly appreciated if someone would help me fixing (and maybe more important) understanding the problem.
+
+Thanks,
+Nico
