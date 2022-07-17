@@ -2,8 +2,10 @@
 #define SYSTEM_H
 
 #include <string>
-#include <unordered_map>
+#include <set>
 #include <vector>
+
+class Process;
 
 #include "process.h"
 #include "processor.h"
@@ -12,6 +14,7 @@ class System {
  public:
   Processor& Cpu();                   /// The CPU.
   std::vector<Process>& Processes();  /// List of processes.
+  Process & Pid(int pid);             /// Finds a process by PID.
   float
   MemoryUtilization();  /// Total memory utiliation in fraction of total memory.
   long UpTime();        /// System uptime in seconds.
@@ -20,14 +23,14 @@ class System {
   std::string Kernel();           /// Name of the kernel.
   std::string OperatingSystem();  /// Name of the operating system.
 
-  System();  /// Initializes the processes.
+  System();  /// Constructor. Initializes the processes.
 
   void Update();  /// Uptates the values.
 
  private:
   Processor cpu_ = {};
   std::vector<Process> processes_ = {};  /// List which holds all processes.
-  std::unordered_map<int, Process*> procMap_ = {};  /// PID to Process mapping.
+  std::vector<int> validPids_ = {};  /// All valid PID.
 };
 
 #endif

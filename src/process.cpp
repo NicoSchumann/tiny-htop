@@ -17,13 +17,29 @@ using std::vector;
 ///
 /// constructor
 ///
-Process::Process(int pid) : pid_(pid), isAlive_(true) {
+Process::Process(int pid, System *system) : pid_(pid), isAlive_(true), pSystem_(system) {
   try {
-    Update();
+   command_ = LinuxParser::Command(pid_);
+   Update();
   } catch (std::runtime_error& e) {
     throw std::runtime_error("In Process::Process():" + std::string(e.what()));
   }
 }
+
+///
+/// Uptates the process' object data.
+///
+void Process::Update() {
+  activeJiffiesOld_ = activeJiffiesNew_;
+  try {
+    upTime_ = LinuxParser::UpTime(pid_);  // measured in seconds
+    activeJiffiesNew_ = LinuxParser::ActiveJiffies(pid_);
+
+  } catch (std::exception& e) {
+    throw std::runtime_error("Process::Update():" + std::string(e.what()));
+  }
+}
+
 ///
 /// Return this process's ID.
 ///
@@ -33,9 +49,7 @@ int Process::Pid() const { return pid_; }
 /// TODO: Return this process's CPU utilization
 ///
 float Process::CpuUtilization() const {
-  static const int hertz = sysconf(_SC_CLK_TCK);
-
-  return (float(activeJiffiesNew_ - activeJiffiesOld_) / hertz) / upTime_;
+  return float(activeJiffiesNew_ - activeJiffiesOld_) / pSystem_->Cpu().JiffiesDelta();
 }
 
 ///
@@ -73,16 +87,3 @@ bool Process::is_alive() const { return isAlive_; }
 ///
 void Process::set_alive(bool flag) { isAlive_ = flag; }
 
-///
-/// Uptates the process' object data.
-///
-void Process::Update() {
-  activeJiffiesOld_ = activeJiffiesNew_;
-  try {
-    upTime_ = LinuxParser::UpTime(pid_);  // measured in seconds
-    activeJiffiesNew_ = LinuxParser::ActiveJiffies(pid_);
-
-  } catch (std::exception& e) {
-    throw std::runtime_error("Process::Update():" + std::string(e.what()));
-  }
-}

@@ -118,8 +118,6 @@ long LinuxParser::ActiveJiffies(int pid) {
   ifs.close();
   std::istringstream iss(line);
 
-  /// PROBLEM: The vals may be wrong (too small) at my machine!
-  ///
   for (int i = 1; i < 14; ++i) {
     iss >> tmp;
   }
@@ -265,12 +263,12 @@ string LinuxParser::Ram(int pid) {
   std::ifstream ifs(kProcDirectory + std::to_string(pid) + kStatFilename);
   if (!ifs) throw std::runtime_error("LinuxParser::Ram()");
   std::string tmp;
-  long vsize;  // float?
+  int vsize;  
   for (int i = 1; i < 23; ++i) {
     ifs >> tmp;
   }
-  ifs >> vsize;          //  bytes
-  vsize /= 1024 * 1024;  // MB
+  ifs >> vsize;   //  in KByte..
+  vsize /= 1024;  //  ..to MB
   return tmp = std::to_string(vsize);
   /*
   auto decpoint = tmp.find('.');

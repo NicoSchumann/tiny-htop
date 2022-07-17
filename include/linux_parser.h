@@ -75,7 +75,7 @@ enum CPUStates {
 std::vector<std::string> CpuUtilization();
 
 ///
-/// Total numbersof jiffies of the CPU.
+/// Total number of jiffies of the CPU.
 ///
 long Jiffies();
 
