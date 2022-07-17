@@ -1,22 +1,24 @@
 
+#include "system.h"
+
 #include <algorithm>
+#include <iostream>  // DEBUG
+#include <stdexcept>
 #include <string>
 #include <vector>
-#include <stdexcept>
 
 #include "linux_parser.h"
 #include "process.h"
 #include "processor.h"
-#include "system.h"
 
 ///
 /// Constructor
 ///
 System::System() {
-  validPids_ = LinuxParser::Pids();
+  std::vector<int> pids = LinuxParser::Pids();
 
-  for (int pid : validPids_) {
-    processes_.emplace_back(pid,this);
+  for (int pid : pids) {
+    processes_.emplace_back(pid, this);
   }
 }
 
@@ -57,64 +59,64 @@ int System::TotalProcesses() { return LinuxParser::TotalProcesses(); }
 ///
 long int System::UpTime() { return LinuxParser::UpTime(); }
 
-Process & System::Pid( int pid ) {
-  auto itr = std::find_if(processes_.begin(),processes_.end(), [=](auto &p){return p.Pid() == pid;});
-  if( itr == processes_.end() ) { throw std::runtime_error("System::Pid(int)"); }
+Process& System::Pid(int pid) {
+  auto itr = std::find_if(processes_.begin(), processes_.end(),
+                          [=](auto& p) { return p.Pid() == pid; });
+  if (itr == processes_.end()) {
+    throw std::runtime_error("System::Pid(int)");
+  }
   return *itr;
 }
+
 ///
-/// Updates the system.
+/// Updates the system. I.e. mainly the process list.
 ///
 void System::Update() {
-
-  // Updating the process list
-  //
   std::vector<int> new_pids = LinuxParser::Pids();
-  auto & old_pids = validPids_;  // shortcut
-  auto & prc = processes_;       // shortcut
-  std::sort(new_pids.begin(), new_pids.end());
-  std::sort(old_pids.begin(), old_pids.end());
-  std::sort(prc.begin(),prc.end(),[](auto &a, auto& b){return a.Pid() <= b.Pid();});
+  auto& prc = processes_;  // short handle
 
-  while( true ) {
-
-    auto pair = std::mismatch(new_pids.begin(), old_pids.begin(), new_pids.end(), old_pids.end());
-    
-    // no mismatch, breaks out of the while loop
-    if( pair.first == new_pids.end() && pair.second == old_pids.end()) {
-      break;
-    }
-    // old_pids is too large, other values are fitting.
-    else if( pair.first == new_pids.end() && pair.second != old_pids.end()) {
-      // delete all entries of old_pids till end
-      for( ; pair.second != old_pids.end(); pair.second = old_pids.erase(pair.second))
-      {
-        auto itr = std::find_if(prc.begin(),prc.end(), [&](auto &p){return p.Pid() == *(pair.second);});
-        if( itr != prc.end()) { prc.erase(itr); }
-        else { throw std::runtime_error("System::Update():2nd_branch"); }
+  // 1) Checks for each process whether it's in the actual PID list.
+  //    - if not, drop dead.
+  for (Process& p : prc) {
+    bool flag = false;
+    for (const int pid : new_pids) {
+      if (p.Pid() == pid) {
+        flag = true;
+        break;
       }
     }
-    // old_pids is to small
-    else if( pair.first != new_pids.end() && pair.second == old_pids.end()) {
-      // adding all missing entries
-      for( ; pair.first != new_pids.end(); ++pair.first) {
-        old_pids.push_back(*(pair.first));
-        prc.emplace_back(*(pair.first),this);
-      }
+    if (flag == false) {
+      p.drop_dead();
     }
-      // If nothing of the above is true, then there happened a real mismatch.
-    else if( pair.first != new_pids.end() && pair.second != old_pids.end()){
-      old_pids.erase(pair.second);
-      auto it = std::find_if(prc.begin(),prc.end(), [&](auto &p){return p.Pid() == *(pair.second);});
-      if( it != prc.end()) { prc.erase(it); }
-      else { throw std::runtime_error("System::Update():4th_branch"); }
+  }
+  // Erase all dead-dropped processes
+  for (auto itr = prc.begin(); itr != prc.end();) {
+    if (itr->is_dead()) {
+      itr = prc.erase(itr);
+    } else {
+      ++itr;
     }
   }
 
+  // 2) Checking for each PID, wheter fore it
+  //    exists a process.
+  //    - if not, create one.
+  for (const int pid : new_pids) {
+    bool flag = false;
+    for (const Process& p : prc) {
+      if (pid == p.Pid()) {
+        flag = true;
+        break;
+      }
+    }
+    if (flag == false) {
+      prc.emplace_back(pid, this);
+    }
+  }
 
   // Updates all processes.
-  for (auto& process : processes_) {
+  for (auto& process : prc) {
     process.Update();
   }
-  std::sort(processes_.begin(), processes_.end(), [&](auto& a, auto& b) { return b < a;});
+  std::sort(prc.begin(), prc.end(), [&](auto& a, auto& b) { return b < a; });
 }

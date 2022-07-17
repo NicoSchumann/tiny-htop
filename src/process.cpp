@@ -17,12 +17,14 @@ using std::vector;
 ///
 /// constructor
 ///
-Process::Process(int pid, System *system) : pid_(pid), isAlive_(true), pSystem_(system) {
+Process::Process(int pid, System* system)
+    : pid_(pid), isDead_(false), pSystem_(system) {
   try {
-   command_ = LinuxParser::Command(pid_);
-   Update();
+    command_ = LinuxParser::Command(pid_);
+    user_ = LinuxParser::User(pid_);
+    this->Update();
   } catch (std::runtime_error& e) {
-    throw std::runtime_error("In Process::Process():" + std::string(e.what()));
+    this->drop_dead();
   }
 }
 
@@ -34,9 +36,11 @@ void Process::Update() {
   try {
     upTime_ = LinuxParser::UpTime(pid_);  // measured in seconds
     activeJiffiesNew_ = LinuxParser::ActiveJiffies(pid_);
+    ram_ = LinuxParser::Ram(pid_);
+    user_ = LinuxParser::User(pid_);
 
   } catch (std::exception& e) {
-    throw std::runtime_error("Process::Update():" + std::string(e.what()));
+    this->drop_dead();
   }
 }
 
@@ -49,21 +53,22 @@ int Process::Pid() const { return pid_; }
 /// TODO: Return this process's CPU utilization
 ///
 float Process::CpuUtilization() const {
-  return float(activeJiffiesNew_ - activeJiffiesOld_) / pSystem_->Cpu().JiffiesDelta();
+  return float(activeJiffiesNew_ - activeJiffiesOld_) /
+         pSystem_->Cpu().JiffiesDelta();
 }
 
 ///
 /// Returns the command that generated this process.
 ///
-string Process::Command() const { return LinuxParser::Command(pid_); }
+string Process::Command() const { return command_; }
 
 ///
 /// TODO: Returns this process's memory utilization.
 ///
-string Process::Ram() const { return LinuxParser::Ram(pid_); }
+string Process::Ram() const { return ram_; }
 
 /// TODO: Return the user (name) that generated this process
-string Process::User() const { return LinuxParser::User(pid_); }
+string Process::User() const { return user_; }
 
 ///
 /// Returns the age of this process (in seconds).
@@ -80,10 +85,9 @@ bool Process::operator<(Process const& other) const {
 ///
 /// Detects whether a process is still valid.
 ///
-bool Process::is_alive() const { return isAlive_; }
+bool Process::is_dead() const { return isDead_; }
 
 ///
 /// Switches the valid state of a process on or off.
 ///
-void Process::set_alive(bool flag) { isAlive_ = flag; }
-
+void Process::drop_dead() { isDead_ = true; }

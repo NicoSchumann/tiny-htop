@@ -3,7 +3,6 @@
 
 class Processor {
  public:
-
   ///
   /// Total CPU aggregation. With consideration of all CPU cores.
   /// RETURN: Range from (0.0f to 1.0f].

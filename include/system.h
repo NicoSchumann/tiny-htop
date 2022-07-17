@@ -2,19 +2,18 @@
 #define SYSTEM_H
 
 #include <string>
-#include <set>
 #include <vector>
-
-class Process;
 
 #include "process.h"
 #include "processor.h"
+
+class Process;
 
 class System {
  public:
   Processor& Cpu();                   /// The CPU.
   std::vector<Process>& Processes();  /// List of processes.
-  Process & Pid(int pid);             /// Finds a process by PID.
+  Process& Pid(int pid);              /// Finds a process by PID.
   float
   MemoryUtilization();  /// Total memory utiliation in fraction of total memory.
   long UpTime();        /// System uptime in seconds.
@@ -30,7 +29,7 @@ class System {
  private:
   Processor cpu_ = {};
   std::vector<Process> processes_ = {};  /// List which holds all processes.
-  std::vector<int> validPids_ = {};  /// All valid PID.
+  // std::vector<int> validPids_ = {};  /// All valid PID.
 };
 
 #endif

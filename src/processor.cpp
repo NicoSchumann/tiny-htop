@@ -1,6 +1,6 @@
 #include "processor.h"
-#include "linux_parser.h"
 
+#include "linux_parser.h"
 
 ///
 /// Constructor
@@ -12,7 +12,6 @@ Processor::Processor() {
   // Take care because calculating the delta, avoiding division by zero.
   ++jiffiesNew_.active;
   ++jiffiesNew_.idle;
-
 }
 
 ///
@@ -49,6 +48,6 @@ long Processor::JiffiesDelta() {
 float Processor::Utilization() {
   long delta_active_jiffies = JiffiesActiveDelta();
   long delta_idle_jiffies = JiffiesIdleDelta();
-  return static_cast<float>(delta_active_jiffies) / (delta_active_jiffies + delta_idle_jiffies);
+  return static_cast<float>(delta_active_jiffies) /
+         (delta_active_jiffies + delta_idle_jiffies);
 }
-

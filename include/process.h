@@ -3,7 +3,7 @@
 
 #include <string>
 
-class System;
+class System;  // forward declaration
 
 #include "system.h"
 
@@ -21,17 +21,19 @@ class Process {
   long int UpTime() const;       /// How many seconds the process still runs.
   bool operator<(Process const& other) const;  /// Implementation dependent.
 
-  Process(int pid, System *system);
+  Process(int pid, System* system);
   void Update();
-  bool is_alive() const;  /// Returns true if the process lives.
-  void set_alive(bool);   /// Set the living state of the process.
+  bool is_dead() const;  /// Checks whether the process is dead
+  void drop_dead();      /// Set the process to a dead state
 
  private:
-  int pid_;       /// process ID
-  bool isAlive_;  /// If the process is no zombi
-  long upTime_;   /// Process' up-time, measured in seconds.
+  int pid_;              /// process ID
+  bool isDead_;          /// If the process is no zombi
+  long upTime_;          /// Process' up-time, measured in seconds.
   std::string command_;  /// Command which started the process.
-  System * pSystem_;
+  std::string user_;     /// User name belongig to the process.
+  std::string ram_;      /// How much Ram the Process occupies
+  System* pSystem_;
 
   long activeJiffiesOld_{};  // Measured in clock ticks,
   long activeJiffiesNew_{};  // both vals used to calc the delta.

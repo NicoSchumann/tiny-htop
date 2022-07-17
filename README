@@ -1,3 +1,10 @@
+UPDATED: 
+========         
+I have the program reworked, especially I fount a solution how to deal with fluctuating /proc/[PID] entries. But I'm not yet satisfied with the program.
+Especially with the CPU consumtion of the processes I'm still unsatisfied.
+
+
+
 At this file I will say something about my version of the C++ Nanodegree version of the tiny htop exercise.
 But what should I write here?
 

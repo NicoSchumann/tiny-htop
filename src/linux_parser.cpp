@@ -2,7 +2,6 @@
 
 #include <unistd.h>
 
-#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
@@ -122,7 +121,7 @@ long LinuxParser::ActiveJiffies(int pid) {
     iss >> tmp;
   }
   iss >> u_time >> s_time >> cu_time >> cs_time;  // vals 14, 15, 16, 17
-  return u_time + s_time + cu_time + cs_time;
+  return u_time + s_time;
 }
 
 ///
@@ -263,12 +262,12 @@ string LinuxParser::Ram(int pid) {
   std::ifstream ifs(kProcDirectory + std::to_string(pid) + kStatFilename);
   if (!ifs) throw std::runtime_error("LinuxParser::Ram()");
   std::string tmp;
-  int vsize;  
+  int vsize;
   for (int i = 1; i < 23; ++i) {
     ifs >> tmp;
   }
-  ifs >> vsize;   //  in KByte..
-  vsize /= 1024;  //  ..to MB
+  ifs >> vsize;          //  in Byte..
+  vsize /= 1024 * 1024;  //  ..to MiBibyte
   return tmp = std::to_string(vsize);
   /*
   auto decpoint = tmp.find('.');

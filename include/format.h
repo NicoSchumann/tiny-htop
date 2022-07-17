@@ -7,6 +7,7 @@ namespace Format {
 
 ///
 /// Formats the time from seconds to HH:MM::SS
+///
 std::string ElapsedTime(long times);
 };  // namespace Format
 
